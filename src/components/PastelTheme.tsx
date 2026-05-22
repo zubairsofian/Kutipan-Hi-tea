@@ -1,9 +1,10 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { ThemeProps } from '../types';
-import { Search, CupSoda, Flower2, Clock } from 'lucide-react';
-import { motion } from 'motion/react';
+import { Search, CupSoda, Flower2, Clock, ChevronDown, ChevronUp } from 'lucide-react';
+import { motion, AnimatePresence } from 'motion/react';
 
 export default function PastelTheme({ senaraiGuru, carian, setCarian, tukarStatus, statistik, kadarBayaran }: ThemeProps) {
+  const [paparBelumBayar, setPaparBelumBayar] = useState(false);
   const guruDitapis = senaraiGuru.filter(guru => guru.nama.toLowerCase().includes(carian.toLowerCase()));
 
   return (
@@ -23,7 +24,7 @@ export default function PastelTheme({ senaraiGuru, carian, setCarian, tukarStatu
         </div>
 
         {/* Colorful Minimalist Stats */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6 mb-12 font-sans relative z-10">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6 mb-6 font-sans relative z-10">
           <div className="bg-gradient-to-br from-amber-100/80 to-orange-100/80 backdrop-blur-sm rounded-3xl p-6 text-center shadow-sm border border-orange-200/50 hover:shadow-md transition-shadow">
             <p className="text-orange-700 text-xs font-bold tracking-widest uppercase mb-2">Terkumpul</p>
             <p className="text-3xl font-bold text-orange-950 text-wrap break-words">RM {statistik.jumlahKutipan}</p>
@@ -39,11 +40,46 @@ export default function PastelTheme({ senaraiGuru, carian, setCarian, tukarStatu
             <p className="text-3xl font-bold text-blue-950 text-wrap break-words">RM {statistik.jumlahBankIn}</p>
           </div>
 
-          <div className="bg-gradient-to-br from-rose-100/80 to-pink-100/80 backdrop-blur-sm rounded-3xl p-6 text-center shadow-sm border border-pink-200/50 hover:shadow-md transition-shadow">
-            <p className="text-rose-700 text-xs font-bold tracking-widest uppercase mb-2">Belum Bayar</p>
+          <button 
+            onClick={() => setPaparBelumBayar(!paparBelumBayar)}
+            className={`bg-gradient-to-br from-rose-100/80 to-pink-100/80 backdrop-blur-sm rounded-3xl p-6 text-center shadow-sm border ${paparBelumBayar ? 'border-rose-400 ring-4 ring-rose-200/50 scale-105' : 'border-pink-200/50'} hover:shadow-md transition-all cursor-pointer flex flex-col justify-center items-center group`}
+          >
+            <p className="text-rose-700 text-xs font-bold tracking-widest uppercase mb-2 flex items-center gap-1">
+              Belum Bayar 
+              {paparBelumBayar ? <ChevronUp className="w-3 h-3 text-rose-500" /> : <ChevronDown className="w-3 h-3 text-rose-500 group-hover:translate-y-0.5 transition-transform" />}
+            </p>
             <p className="text-3xl font-bold text-rose-950">{statistik.belumBayar} <span className="text-lg font-medium text-rose-700/60">/ {senaraiGuru.length}</span></p>
-          </div>
+          </button>
         </div>
+
+        {/* Senarai Belum Bayar Dashboard */}
+        <AnimatePresence>
+          {paparBelumBayar && statistik.belumBayar > 0 && (
+            <motion.div 
+              initial={{ height: 0, opacity: 0 }}
+              animate={{ height: "auto", opacity: 1 }}
+              exit={{ height: 0, opacity: 0 }}
+              className="mb-10 font-sans relative z-10 overflow-hidden"
+            >
+              <div className="bg-white/60 backdrop-blur-sm rounded-3xl p-5 md:p-6 shadow-md border border-rose-200/60 relative overflow-hidden mt-2">
+                <div className="absolute -top-10 -right-10 p-4 opacity-5 pointer-events-none">
+                  <Clock className="w-48 h-48 text-rose-900" />
+                </div>
+                <h2 className="text-rose-900 font-bold text-lg mb-4 flex items-center gap-2 relative z-10">
+                  <span className="w-2 h-2 rounded-full bg-rose-500 animate-pulse"></span>
+                  Senarai Belum Bayar ({statistik.belumBayar} Guru)
+                </h2>
+                <div className="flex flex-wrap gap-2 relative z-10">
+                  {senaraiGuru.filter(g => g.status === 'Belum Bayar').map(guru => (
+                    <span key={guru.id} className="bg-rose-50 px-3 py-1.5 rounded-xl text-xs md:text-sm font-semibold text-rose-800 border border-rose-200 shadow-sm hover:bg-rose-100 hover:border-rose-300 transition-colors cursor-default">
+                      {guru.nama}
+                    </span>
+                  ))}
+                </div>
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
 
         {/* Search */}
         <div className="flex justify-center mb-10 font-sans relative z-10">
