@@ -1,13 +1,23 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import PastelTheme from './components/PastelTheme';
 import { senaraiGuruAsal, KADAR_BAYARAN } from './data';
 import { StatusBayaran, ThemeProps } from './types';
 
+const STORAGE_KEY = 'kutipan_hitea_data';
+
 export default function App() {
-  const [senaraiGuru, setSenaraiGuru] = useState(
-    senaraiGuruAsal.map(guru => ({ ...guru, status: 'Belum Bayar' as StatusBayaran }))
-  );
+  const [senaraiGuru, setSenaraiGuru] = useState(() => {
+    const savedData = localStorage.getItem(STORAGE_KEY);
+    if (savedData) {
+      return JSON.parse(savedData);
+    }
+    return senaraiGuruAsal.map(guru => ({ ...guru, status: 'Belum Bayar' as StatusBayaran }));
+  });
   const [carian, setCarian] = useState('');
+
+  useEffect(() => {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(senaraiGuru));
+  }, [senaraiGuru]);
 
   const tukarStatus = (id: number, statusBaru: StatusBayaran) => {
     setSenaraiGuru(prev =>
